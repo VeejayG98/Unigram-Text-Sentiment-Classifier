@@ -3,7 +3,7 @@ import re
 import sys
 
 import nltk
-import numpy
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 
@@ -64,7 +64,15 @@ def tag_negation(snippet):
 # corpus is a list of tuples (snippet, label)
 # Returns a dictionary {word: index}
 def get_feature_dictionary(corpus):
-    pass
+    index = 0
+    dictionary = {}
+    for i in range(len(corpus)):
+        snippet, label = corpus[i]
+        for word in snippet:
+            if word not in dictionary:
+                dictionary[word] = index
+                index += 1
+    return dictionary
     
 
 # Converts a snippet into a feature vector
@@ -72,7 +80,10 @@ def get_feature_dictionary(corpus):
 # feature_dict is a dictionary {word: index}
 # Returns a Numpy array
 def vectorize_snippet(snippet, feature_dict):
-    pass
+    word_occurrences = np.zeros(len(feature_dict))
+    for word in snippet:
+        word_occurrences[feature_dict[word]] += 1
+    return word_occurrences
 
 
 # Trains a classification model (in-place)
@@ -136,4 +147,4 @@ if __name__ == '__main__':
 # corpus = load_corpus('/Users/jayasuryaagovindraj/Documents/NLP Assignments/Assignment 2/Programming/test.txt')
 # for i in range(len(corpus)):
 #     snippet, label = corpus[i]
-#     tag_negation(snippet)
+#     snippet = tag_negation(snippet)
