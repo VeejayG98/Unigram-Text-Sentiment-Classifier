@@ -15,14 +15,29 @@ sentence_enders = set(['.', '?', '!', ';'])
 # corpus_path is a string
 # Returns a list of (string, int) tuples
 def load_corpus(corpus_path):
-    pass
+    corpus = open(corpus_path).read()
+    sentences = corpus.split('\n')
+    processed_corpus = []
+    for i in range(len(sentences)):
+        try:
+            sentence, label = sentences[i].split('\t')
+            label = int(label)
+            words = sentence.split(' ')
+            processed_corpus.append((words, label))
+        except:
+            continue
+    return processed_corpus
+
 
 
 # Checks whether or not a word is a negation word
 # word is a string
 # Returns a boolean
 def is_negation(word):
-    pass
+    if word in negation_words:
+        return True
+    if word[-3: ] == "n't":
+        return True
 
 
 # Modifies a snippet to add negation tagging
@@ -30,7 +45,6 @@ def is_negation(word):
 # Returns a list of strings
 def tag_negation(snippet):
     pass
-
 
 # Assigns to each unigram an index in the feature vector
 # corpus is a list of tuples (snippet, label)
@@ -104,3 +118,5 @@ def main(args):
     
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
+
+# load_corpus('/Users/jayasuryaagovindraj/Documents/NLP Assignments/Assignment 2/Programming/test.txt')
