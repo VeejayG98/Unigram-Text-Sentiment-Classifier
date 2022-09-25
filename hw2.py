@@ -48,7 +48,6 @@ def is_negation(word):
 def tag_negation(snippet):
     pos_snippet = nltk.pos_tag(snippet)
     NOT_TAG = "NOT_"
-    print(pos_snippet)
     for i in range(len(pos_snippet)):
         word, pos = pos_snippet[i]
         if word in negation_enders or word in sentence_enders or pos =='JJR' or pos == 'RBR':
@@ -91,21 +90,55 @@ def vectorize_snippet(snippet, feature_dict):
 # feature_dict is a dictionary {word: label}
 # Returns a tuple (X, Y) where X and Y are Numpy arrays
 def vectorize_corpus(corpus, feature_dict):
-    pass
+    X = np.empty((len(corpus), len(feature_dict)))
+    Y = np.empty(len(corpus))
+    for i in range(len(corpus)):
+        snippet, label = corpus[i]
+        X[i] = vectorize_snippet(snippet, feature_dict)
+        Y[i] = label
+    return X, Y
 
 
 # Performs min-max normalization (in-place)
 # X is a Numpy array
 # No return value
-def normalize(X):
-    pass
+def normalize(X: np.ndarray):
+    max_columns = X.max(axis = 0)
+    min_columns = X.min(axis = 0)
+    X = (X - min_columns)/(max_columns - min_columns)
+    return X
+
+    # (n, d) = X.shape
+    # X2 = np.empty(X.shape)
+    # for index in range(d):
+    #     column = X[:, index]
+    #     minimum = column.min()
+    #     maximum = column.max()
+    #     if maximum == minimum:
+    #         continue
+    #     else:
+    #         X2[:, index] = (column-minimum) / (maximum-minimum)
+    # for i in range(X.shape[0]):
+    #     if not np.array_equal(X1[i], X2[i]):
+    #         print(f"X1: {X1[i]}")
+    #         print(f"X2: {X2[i]}")
 
 
 # Trains a model on a training corpus
 # corpus_path is a string
 # Returns a LogisticRegression
 def train(corpus_path):
-    pass
+    corpus = load_corpus(corpus_path)
+    tagged_corpus = []
+    for i in range(len(corpus)):
+        snippet, label = corpus[i]
+        tagged_corpus.append((tag_negation(snippet), label))
+    feature_dict = get_feature_dictionary(corpus)
+    X, Y = vectorize_corpus(tagged_corpus, feature_dict)
+    normalize(X)
+    # print(X,Y)
+    model = LogisticRegression().fit(X, Y)
+    return model, feature_dict
 
 
 # Calculate precision, recall, and F-measure
@@ -147,4 +180,4 @@ if __name__ == '__main__':
 # corpus = load_corpus('/Users/jayasuryaagovindraj/Documents/NLP Assignments/Assignment 2/Programming/test.txt')
 # for i in range(len(corpus)):
 #     snippet, label = corpus[i]
-#     snippet = tag_negation(snippet)
+#     corpus[i][0] = tag_negation(snippet)
