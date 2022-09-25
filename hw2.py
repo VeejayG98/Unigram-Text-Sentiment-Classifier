@@ -81,7 +81,8 @@ def get_feature_dictionary(corpus):
 def vectorize_snippet(snippet, feature_dict):
     word_occurrences = np.zeros(len(feature_dict))
     for word in snippet:
-        word_occurrences[feature_dict[word]] += 1
+        if word in feature_dict:
+            word_occurrences[feature_dict[word]] += 1
     return word_occurrences
 
 
@@ -103,10 +104,13 @@ def vectorize_corpus(corpus, feature_dict):
 # X is a Numpy array
 # No return value
 def normalize(X: np.ndarray):
-    max_columns = X.max(axis = 0)
-    min_columns = X.min(axis = 0)
-    X = (X - min_columns)/(max_columns - min_columns)
-    return X
+
+    for i in range(X.shape[1]):
+        X_column = X[:, i]
+        minimum = X_column.min()
+        maximum = X_column.max()
+        X[:, i] = (X_column - minimum)/(maximum - minimum)
+
 
     # (n, d) = X.shape
     # X2 = np.empty(X.shape)
@@ -123,6 +127,12 @@ def normalize(X: np.ndarray):
     #         print(f"X1: {X1[i]}")
     #         print(f"X2: {X2[i]}")
 
+def normalize_test(X: np.ndarray):
+    max_columns = X.max(axis = 0)
+    min_columns = X.min(axis = 0)
+    X = (X - min_columns)/(max_columns - min_columns)
+    return X
+
 
 # Trains a model on a training corpus
 # corpus_path is a string
@@ -136,6 +146,7 @@ def train(corpus_path):
     feature_dict = get_feature_dictionary(corpus)
     X, Y = vectorize_corpus(tagged_corpus, feature_dict)
     normalize(X)
+    # X2 = normalize_test(X)
     # print(X,Y)
     model = LogisticRegression().fit(X, Y)
     return model, feature_dict
