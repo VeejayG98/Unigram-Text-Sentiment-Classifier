@@ -1,3 +1,4 @@
+from cProfile import label
 import re
 import sys
 
@@ -22,7 +23,8 @@ def load_corpus(corpus_path):
         try:
             sentence, label = sentences[i].split('\t')
             label = int(label)
-            words = sentence.split(' ')
+            # words = sentence.split(' ')
+            words = nltk.word_tokenize(sentence)
             processed_corpus.append((words, label))
         except:
             continue
@@ -44,7 +46,19 @@ def is_negation(word):
 # snippet is a list of strings
 # Returns a list of strings
 def tag_negation(snippet):
-    pass
+    pos_snippet = nltk.pos_tag(snippet)
+    NOT_TAG = "NOT_"
+    print(pos_snippet)
+    for i in range(len(pos_snippet)):
+        word, pos = pos_snippet[i]
+        if word in negation_enders or word in sentence_enders or pos =='JJR' or pos == 'RBR':
+            break
+        if is_negation(word):
+            if i + 1 < len(pos_snippet) and word == "not" and pos_snippet[i][0] == "only":
+                break
+            else:
+                snippet[i + 1] = NOT_TAG + snippet[i + 1]
+    return snippet
 
 # Assigns to each unigram an index in the feature vector
 # corpus is a list of tuples (snippet, label)
@@ -119,4 +133,7 @@ def main(args):
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
 
-# load_corpus('/Users/jayasuryaagovindraj/Documents/NLP Assignments/Assignment 2/Programming/test.txt')
+# corpus = load_corpus('/Users/jayasuryaagovindraj/Documents/NLP Assignments/Assignment 2/Programming/test.txt')
+# for i in range(len(corpus)):
+#     snippet, label = corpus[i]
+#     tag_negation(snippet)
