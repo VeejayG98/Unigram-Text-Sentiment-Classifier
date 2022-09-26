@@ -23,7 +23,6 @@ def load_corpus(corpus_path):
         try:
             sentence, label = sentences[i].split('\t')
             label = int(label)
-            # words = sentence.split(' ')
             words = nltk.word_tokenize(sentence)
             processed_corpus.append((words, label))
         except:
@@ -110,27 +109,9 @@ def normalize(X: np.ndarray):
         minimum = X_column.min()
         maximum = X_column.max()
         if maximum == minimum:
-            # continue
             X[:, i] = np.zeros(X_column.shape[0])
         else:
             X[:, i] = (X_column - minimum)/(maximum - minimum)
-
-
-    # (n, d) = X.shape
-    # X2 = np.empty(X.shape)
-    # for index in range(d):
-    #     column = X[:, index]
-    #     minimum = column.min()
-    #     maximum = column.max()
-    #     if maximum == minimum:
-    #         continue
-    #     else:
-    #         X2[:, index] = (column-minimum) / (maximum-minimum)
-    # for i in range(X.shape[0]):
-    #     if not np.array_equal(X1[i], X2[i]):
-    #         print(f"X1: {X1[i]}")
-    #         print(f"X2: {X2[i]}")
-
 
 
 # Trains a model on a training corpus
@@ -215,8 +196,3 @@ def main(args):
     
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
-
-# corpus = load_corpus('/Users/jayasuryaagovindraj/Documents/NLP Assignments/Assignment 2/Programming/test.txt')
-# for i in range(len(corpus)):
-#     snippet, label = corpus[i]
-#     corpus[i][0] = tag_negation(snippet)
