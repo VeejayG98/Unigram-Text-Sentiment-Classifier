@@ -40,7 +40,7 @@ def is_negation(word):
         return True
     if word[-3: ] == "n't":
         return True
-
+    return False
 
 # Modifies a snippet to add negation tagging
 # snippet is a list of strings
@@ -55,7 +55,7 @@ def tag_negation(snippet):
         if is_negation(word):
             if i + 1 < len(pos_snippet) and word == "not" and pos_snippet[i][0] == "only":
                 break
-            else:
+            elif i + 1 < len(pos_snippet):
                 snippet[i + 1] = NOT_TAG + snippet[i + 1]
     return snippet
 
@@ -109,7 +109,10 @@ def normalize(X: np.ndarray):
         X_column = X[:, i]
         minimum = X_column.min()
         maximum = X_column.max()
-        X[:, i] = (X_column - minimum)/(maximum - minimum)
+        if maximum == minimum:
+            continue
+        else:
+            X[:, i] = (X_column - minimum)/(maximum - minimum)
 
 
     # (n, d) = X.shape
@@ -127,11 +130,6 @@ def normalize(X: np.ndarray):
     #         print(f"X1: {X1[i]}")
     #         print(f"X2: {X2[i]}")
 
-def normalize_test(X: np.ndarray):
-    max_columns = X.max(axis = 0)
-    min_columns = X.min(axis = 0)
-    X = (X - min_columns)/(max_columns - min_columns)
-    return X
 
 
 # Trains a model on a training corpus
@@ -143,12 +141,11 @@ def train(corpus_path):
     for i in range(len(corpus)):
         snippet, label = corpus[i]
         tagged_corpus.append((tag_negation(snippet), label))
-    feature_dict = get_feature_dictionary(corpus)
+    feature_dict = get_feature_dictionary(tagged_corpus)
     X, Y = vectorize_corpus(tagged_corpus, feature_dict)
     normalize(X)
-    # X2 = normalize_test(X)
-    # print(X,Y)
-    model = LogisticRegression().fit(X, Y)
+    model = LogisticRegression()
+    model.fit(X, Y)
     return model, feature_dict
 
 
@@ -157,15 +154,36 @@ def train(corpus_path):
 # Y_test is a Numpy array
 # Returns a tuple of floats
 def evaluate_predictions(Y_pred, Y_test):
-    pass
+    tp = 0
+    fp = 0
+    fn = 0
+    for i in range(len(Y_pred)):
+        if Y_test[i] == 1 and Y_pred[i] == Y_test[i]:
+            tp += 1
+        elif Y_test[i] == 0 and Y_pred[i] != Y_test[i]:
+            fp += 1
+        elif Y_test[i] == 1 and Y_pred[i] != Y_test[i]:
+            fn += 1
+
+    precision = tp/(tp + fp)
+    recall = tp/(tp + fn)
+    f_measure = (2 * precision * recall)/(precision + recall)
+    return precision, recall, f_measure
 
 
 # Evaluates a model on a test corpus and prints the results
 # model is a LogisticRegression
 # corpus_path is a string
 # Returns a tuple of floats
-def test(model, feature_dict, corpus_path):
-    pass
+def test(model: LogisticRegression, feature_dict, corpus_path):
+    corpus = load_corpus(corpus_path)
+    tagged_corpus = []
+    for i in range(len(corpus)):
+        snippet, label = corpus[i]
+        tagged_corpus.append((tag_negation(snippet), label))
+    X_test, Y_test = vectorize_corpus(tagged_corpus, feature_dict)
+    Y_pred = model.predict(X_test)
+    return evaluate_predictions(Y_pred, Y_test)
 
 
 # Selects the top k highest-weight features of a logistic regression model
