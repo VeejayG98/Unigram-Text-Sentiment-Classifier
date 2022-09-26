@@ -110,7 +110,8 @@ def normalize(X: np.ndarray):
         minimum = X_column.min()
         maximum = X_column.max()
         if maximum == minimum:
-            continue
+            # continue
+            X[:, i] = np.zeros(X_column.shape[0])
         else:
             X[:, i] = (X_column - minimum)/(maximum - minimum)
 
@@ -190,8 +191,17 @@ def test(model: LogisticRegression, feature_dict, corpus_path):
 # logreg_model is a trained LogisticRegression
 # feature_dict is a dictionary {word: index}
 # k is an int
-def get_top_features(logreg_model, feature_dict, k=1):
-    pass
+def get_top_features(logreg_model: LogisticRegression, feature_dict: dict, k=1):
+    weight_array = []
+    for index in range(logreg_model.coef_.shape[1]):
+        weight_array.append((index, logreg_model.coef_[0, index]))
+    weight_array.sort(key = lambda x: x[1], reverse = True)
+    top_k_words = []
+    reverse_feature_dict = {v: k for k, v in feature_dict.items()}
+    for i in range(len(weight_array)):
+        index, weight = weight_array[i]
+        top_k_words.append((reverse_feature_dict[i], weight))
+    return top_k_words[: k]
 
 
 def main(args):
