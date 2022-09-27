@@ -176,12 +176,12 @@ def get_top_features(logreg_model: LogisticRegression, feature_dict: dict, k=1):
     weight_array = []
     for index in range(logreg_model.coef_.shape[1]):
         weight_array.append((index, logreg_model.coef_[0, index]))
-    weight_array.sort(key = lambda x: x[1], reverse = True)
+    weight_array.sort(key = lambda x: abs(x[1]), reverse = True)
     top_k_words = []
     reverse_feature_dict = {v: k for k, v in feature_dict.items()}
     for i in range(len(weight_array)):
         index, weight = weight_array[i]
-        top_k_words.append((reverse_feature_dict[i], weight))
+        top_k_words.append((reverse_feature_dict[index], weight))
     return top_k_words[: k]
 
 
