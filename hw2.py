@@ -47,14 +47,17 @@ def is_negation(word):
 def tag_negation(snippet):
     pos_snippet = nltk.pos_tag(snippet)
     NOT_TAG = "NOT_"
+    flag = False
     for i in range(len(pos_snippet)):
         word, pos = pos_snippet[i]
         if word in negation_enders or word in sentence_enders or pos =='JJR' or pos == 'RBR':
             break
-        if is_negation(word):
+        if not flag:
+            flag = is_negation(word)
+        if flag:
             if i + 1 < len(pos_snippet) and word == "not" and pos_snippet[i][0] == "only":
                 break
-            elif i + 1 < len(pos_snippet):
+            elif i + 1 < len(pos_snippet) and snippet[i + 1] not in sentence_enders and pos_snippet[i + 1][1] != 'JJR' and pos_snippet[i + 1][1] != 'RBR':
                 snippet[i + 1] = NOT_TAG + snippet[i + 1]
     return snippet
 
